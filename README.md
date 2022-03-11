@@ -261,20 +261,6 @@ define( 'DB_PASSWORD', 'mypassword' );
 ```
 chcp 65001
 
-use post/windows/manage/enable_rdp
-
-set USERNAME aaaa
-
-set PASSWORD trew
-
-set SESSION session_id
-
-run
-
-Get-Content
-
-sessions -c "chcp 65001" -i index
-
 net user cadm pass
 ```
 
