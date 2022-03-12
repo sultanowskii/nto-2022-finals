@@ -1,5 +1,5 @@
 <h1 align="center">nto-2022-finals</h1> 
-<h1 align="center">Отчет команды # DEFINE AIDAR ASADULLIN</h1>
+<h1 align="center">Отчет команды DEFINE AIDAR ASADULLIN</h1>
 
 1. Network Mapping
 
