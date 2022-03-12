@@ -223,16 +223,6 @@ Service Info: Host: A33-ENTEK; OS: Windows; CPE: cpe:/o:microsoft:windows
 ```
 2. Сервисы
 
-Web server 10.33.240.5:80 - smart EPS (сайт связан с электроэнергетикой)
-
-Web server 10.33.2.10:80 – Word Press, на том же IP есть база данных mysql и сайт, возвращающий ошибку 500
-
-Web server 10.33.2.11:80 – Atrium (другое название - CyberPolygon)
-
-SLmail 10.33.2.12
-
-LDAP 10.33.3.10
-
 2.1. WordPress
 
 Есть 3 порта: 80, 3306, 8080, доступен только прот 80
